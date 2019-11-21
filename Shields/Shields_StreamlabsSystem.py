@@ -9,6 +9,7 @@ import operator
 import time
 import codecs
 import io
+import bot_globals
 
 # ---------------------------------------
 # [Required] Script information
@@ -69,11 +70,8 @@ class Settings:
 
 def ReloadSettings(jsonData):
     """Reload settings"""
-    # Globals
-    global MySet
-
     # Reload saved settings
-    MySet.ReloadSettings(jsonData)
+    bot_globals.shield_MySet.ReloadSettings(jsonData)
 
     # End of ReloadSettings
     return
@@ -85,21 +83,15 @@ def ReloadSettings(jsonData):
 def Init():
     """Required tick function"""
     # Globals
-    global MySet
-    global LastPayout
-    LastPayout = time.time()
-    global PayoutInterval
-    PayoutInterval = 600  # base is set to 10 minutes between payout
-    global BasePayout  # base payout of the script
-    BasePayout = 0
-    global PayoutMultiplier
-    PayoutMultiplier = 1.0
-    global shieldsFile
-    shieldsFile = "D:\Program Files\Streamlabs Chatbot\Services\Twitch\shields.txt"
+    bot_globals.shield_LastPayout = time.time()
+    bot_globals.shield_PayoutInterval = 600  # base is set to 10 minutes between payout
+    bot_globals.shield_BasePayout = 0 # base payout of the script
+    bot_globals.shield_PayoutMultiplier = 1.0
+    bot_globals.shield_File = "D:\Program Files\Streamlabs Chatbot\Services\Twitch\shields.txt"
 
     m_Active = False
     # Load in saved settings
-    MySet = Settings(settingsFile)
+    bot_globals.shield_MySet = Settings(settingsFile)
 
     # End of Init
     return
@@ -113,24 +105,20 @@ def Execute(data):
 
 def Tick():
     """Required tick function"""
-    global LastPayout
-    global PayoutInterval
-    global BasePayout
-    global PayoutMultiplier
-    global shieldsFile
 
     # if the last payout was more than the interval's time ago, payout now.
-    if time.time() - LastPayout > PayoutInterval and Parent.IsLive() is True:
+    if time.time() - bot_globals.shield_LastPayout > bot_globals.shield_PayoutInterval and Parent.IsLive() is True:
         myDict = {}
 
-        with io.open(shieldsFile, encoding='utf-8-sig', mode='r') as shields:
+        with io.open(bot_globals.shield_File, encoding='utf-8-sig', mode='r') as shields:
             shieldCount = int(shields.read().decode('utf-8-sig'))
             for viewers in set(Parent.GetViewerList()):
-                myDict[viewers] = int(float(BasePayout) + (float(shieldCount) * PayoutMultiplier))
+                myDict[viewers] = int(float(bot_globals.shield_BasePayout) + (float(shieldCount) *
+                                                                              bot_globals.shield_PayoutMultiplier))
 
         # add points to all present viewers
         Parent.AddPointsAll(myDict)
         # Parent.SendTwitchMessage("The shields creak and wooden slabs fall from them.")
 
-        LastPayout = time.time()
+        bot_globals.shield_LastPayout = time.time()
     return

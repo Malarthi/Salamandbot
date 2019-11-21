@@ -1,0 +1,9 @@
+global shield_MySet
+global shield_LastPayout
+global shield_PayoutInterval
+global shield_BasePayout
+global shield_PayoutMultiplier
+global shield_File
+
+
+global vote_MySet
